@@ -32,6 +32,65 @@ func (u *Universe) Get(col, row int) (int, error) {
 	return u.data[col][row], nil
 }
 
+type Cell struct {
+	x, y  int
+	limit int
+}
+
+func (c *Cell) GetNeighbours() []Coordinate {
+
+	offsets := []struct{ dx, dy int }{
+		{-1, 0},  // Izquierda
+		{-1, -1}, // Izquierda-arriba
+		{0, -1},  // Arriba
+		{1, -1},  // Derecha-arriba
+		{1, 0},   // Derecha
+		{1, 1},   // Derecha-abajo
+		{0, 1},   // Abajo
+		{-1, 1},  // Izquierda-abajo
+	}
+
+	// Slice para almacenar los vecinos
+	neighbours := make([]Coordinate, 0, len(offsets))
+
+	// Calcular los vecinos
+	for _, offset := range offsets {
+		neighbour := NewCoordinate(c.limit)
+		neighbour.Set(c.x+offset.dx, c.y+offset.dy)
+		neighbours = append(neighbours, *neighbour)
+	}
+
+	return neighbours
+}
+
+type Coordinate struct {
+	x, y  int
+	limit int
+}
+
+func NewCoordinate(limit int) *Coordinate {
+	return &Coordinate{limit: limit}
+}
+
+func (c *Coordinate) Set(x, y int) {
+	c.x = normalizar(x, c.limit)
+	c.y = normalizar(y, c.limit)
+}
+
+func normalizar(value, limit int) int {
+	if value < 0 {
+		value = limit - 1
+	} else if value == limit {
+		value = 0
+	}
+
+	return value
+}
+
+func NewCell(x, y, limit int) *Cell {
+	return &Cell{x: x, y: y, limit: limit}
+}
+
 func main() {
 	var size, numbeSeed int
 	fmt.Scan(&size, &numbeSeed)
@@ -45,8 +104,6 @@ func main() {
 
 	sparkLife(universe)
 	displayUniverse(universe)
-
-	// fmt.Println(universe.data)
 }
 
 func newUniverse(size int) (*Universe, error) {
