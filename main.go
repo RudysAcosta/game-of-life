@@ -7,8 +7,9 @@ import (
 )
 
 type Universe struct {
-	size int
-	data [][]int
+	size        int
+	data        [][]int
+	newGenerate [][]int
 }
 
 func (u *Universe) Set(col, row, value int) error {
@@ -30,6 +31,43 @@ func (u *Universe) Get(col, row int) (int, error) {
 	}
 
 	return u.data[col][row], nil
+}
+
+func (u *Universe) NextGeneration() {
+	newGenerate := make([][]int, u.size)
+	for i := range newGenerate {
+		newGenerate[i] = make([]int, u.size)
+	}
+
+	for i := range u.data {
+		for j := range u.data[i] {
+			cell := NewCell(i, j, u.size)
+			neighbours := cell.GetNeighbours()
+			alive := 0
+			for _, neighbour := range neighbours {
+				if u.data[neighbour.x][neighbour.y] == 1 {
+					alive++
+					if alive > 3 {
+						break
+					}
+				}
+			}
+
+			if u.data[i][j] == 1 {
+				if alive < 2 || alive > 3 {
+					newGenerate[i][j] = 0
+				}
+			} else {
+				if alive == 3 {
+					newGenerate[i][j] = 1
+				}
+			}
+		}
+	}
+
+	for i := range u.data {
+		copy(u.data[i], newGenerate[i])
+	}
 }
 
 type Cell struct {
@@ -92,8 +130,8 @@ func NewCell(x, y, limit int) *Cell {
 }
 
 func main() {
-	var size, numbeSeed int
-	fmt.Scan(&size, &numbeSeed)
+	var size, numbeSeed, generation int
+	fmt.Scan(&size, &numbeSeed, &generation)
 
 	rand.Seed(int64(numbeSeed))
 
@@ -103,21 +141,32 @@ func main() {
 	}
 
 	sparkLife(universe)
+
+	// universe.generated = append(universe.generated, *universe)
+	universe.NextGeneration()
+	// universe.NextGeneration()
+	// universe.NextGeneration()
+
+	fmt.Println(universe.data)
+
 	displayUniverse(universe)
+
 }
 
 func newUniverse(size int) (*Universe, error) {
 	if size <= 0 {
-		return nil, errors.New("rand.Intn(2)size must be greater than 0")
+		return nil, errors.New("size must be greater than 0")
 	}
 
 	data := make([][]int, size)
+	newGenerate := make([][]int, size)
 
 	for i := range data {
 		data[i] = make([]int, size)
+		newGenerate[i] = make([]int, size)
 	}
 
-	return &Universe{size: size, data: data}, nil
+	return &Universe{size: size, data: data, newGenerate: newGenerate}, nil
 }
 
 func sparkLife(universe *Universe) error {
