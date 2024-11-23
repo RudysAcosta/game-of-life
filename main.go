@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 type Universe struct {
@@ -88,6 +89,16 @@ func (u *Universe) swapGenerations() {
 	}
 }
 
+func (u *Universe) Alive() int {
+	alive := 0
+	for i := range u.currentGeneration {
+		for j := range u.currentGeneration[i] {
+			alive += u.currentGeneration[i][j]
+		}
+	}
+	return alive
+}
+
 func sparkLife(u *Universe) {
 	for i := range u.currentGeneration {
 		for j := range u.currentGeneration[i] {
@@ -121,10 +132,12 @@ func boolToInt(b bool) int {
 }
 
 func main() {
-	var size, seed, generations int
-	fmt.Scan(&size, &seed, &generations)
+	var size, generations int
+	fmt.Scan(&size)
 
-	rand.Seed(int64(seed))
+	generations = 15
+
+	rand.Seed(time.Now().UnixNano())
 	universe, err := NewUniverse(size)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -133,9 +146,11 @@ func main() {
 
 	sparkLife(universe)
 
-	for i := 0; i < generations; i++ {
+	for i := 1; i < generations; i++ {
+		fmt.Printf("Generation #%d\n", i)
+		fmt.Printf("Alive: %d\n", universe.Alive())
+		displayUniverse(universe)
 		universe.NextGeneration()
 	}
 
-	displayUniverse(universe)
 }

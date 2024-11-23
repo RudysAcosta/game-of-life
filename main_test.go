@@ -5,26 +5,19 @@ import (
 )
 
 func TestGetneighbours(t *testing.T) {
-	cell := Cell{x: 7, y: 0, limit: 8}
-	neighbours := cell.GetNeighbours()
-	if len(neighbours) != 8 {
-		t.Errorf("Expected 8 neighbours, got %d", len(neighbours))
-	}
+	u, _ := NewUniverse(3)
+	u.Set(0, 0, 1)
+	u.Set(0, 1, 1)
+	u.Set(0, 2, 1)
+	u.Set(1, 0, 1)
+	u.Set(1, 1, 1)
+	u.Set(1, 2, 1)
+	u.Set(2, 0, 1)
+	u.Set(2, 1, 1)
+	u.Set(2, 2, 1)
 
-	expected := []Coordinate{
-		{6, 0, 8},
-		{6, 7, 8},
-		{7, 7, 8},
-		{0, 7, 8},
-		{0, 0, 8},
-		{0, 1, 8},
-		{7, 1, 8},
-		{6, 1, 8},
-	}
-
-	for i, n := range neighbours {
-		if n != expected[i] {
-			t.Errorf("Expected %v, got %v", expected[i], n)
-		}
+	neighbours := u.countAliveNeighbours(1, 1)
+	if neighbours != 8 {
+		t.Errorf("Expected 8, got %d", neighbours)
 	}
 }
